@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use StreetMesh\Domicile\Http\HomeController;
+use StreetMesh\Domicile\Http\ResidentsController;
 
 /*
- * Nothing here claims the front page. The application mounts these wherever it
- * decides, because a server that is also a venue cannot give both halves the
- * same door and neither half can settle which one gets it.
+ * One screen, at a name nothing else wants. The front page and the home page
+ * are the application's, because a server has one of each and may offer more
+ * than one capability.
  */
-Route::get('/', HomeController::class)->name('domicile.home');
+Route::get('residents', ResidentsController::class)->name('domicile.residents');

@@ -14,14 +14,13 @@ class DomicileServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'domicile');
 
         /*
-         * Mounted where the application says, defaulting to the root only
-         * because a server with nothing else installed should still answer
-         * somewhere. A prefix set in configuration is how a server that is also
-         * a venue keeps both halves reachable.
+         * At its own name, with no prefix. There is nothing here another
+         * capability would also want, so there is nothing to arrange — the two
+         * surfaces that overlap, the front page and the home page, belong to
+         * the application.
          */
         $this->app['router']
             ->middleware('web')
-            ->prefix((string) config('streetmesh.mount.domicile', ''))
             ->group(__DIR__.'/../routes/web.php');
     }
 }

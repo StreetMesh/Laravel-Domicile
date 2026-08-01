@@ -3,13 +3,15 @@
 namespace StreetMesh\Domicile;
 
 use StreetMesh\Protocol\Laravel\Capabilities\Capability;
+use StreetMesh\Protocol\Laravel\Capabilities\Widget;
 
 /**
  * This server is somewhere people live.
  *
- * It says so on the wire and in the navigation, and it does not say where it
- * sits — a capability that claimed the front page would be claiming ground it
- * shares with whatever else is installed.
+ * It says so on the wire, offers something to greet strangers with, and offers
+ * a panel for a signed-in person's home page. It does not decide where any of
+ * that goes, because a server may offer more than one capability and only the
+ * application can arrange them.
  */
 final class DomicileCapability implements Capability
 {
@@ -20,14 +22,20 @@ final class DomicileCapability implements Capability
 
     public function serviceType(): string
     {
-        // The name ATProtocol uses for the same thing, so a stranger reading
-        // this document knows what it is without knowing what StreetMesh is.
         return 'AtprotoPersonalDataServer';
     }
 
-    public function home(): string
+    public function frontPage(): string
     {
-        return 'domicile.home';
+        return 'domicile::front';
+    }
+
+    /**
+     * @return array<int, Widget>
+     */
+    public function widgets(): array
+    {
+        return [new DomicileWidget];
     }
 
     /**
@@ -36,7 +44,7 @@ final class DomicileCapability implements Capability
     public function navigation(): array
     {
         return [
-            ['label' => 'Home', 'route' => 'domicile.home', 'icon' => 'home'],
+            ['label' => 'Residents', 'route' => 'domicile.residents'],
         ];
     }
 }
