@@ -32,7 +32,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "StreetMesh\\Domicile\\Tests\\": "tests/"
+            "StreetMesh\\Domicile\\Tests\\": "tests/",
+            "StreetMesh\\Domicile\\Tests\\Fixtures\\": "tests/fixtures/"
         }
     },
     "extra": {

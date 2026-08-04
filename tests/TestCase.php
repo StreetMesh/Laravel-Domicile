@@ -45,6 +45,10 @@ abstract class TestCase extends Orchestra
 
     protected function defineDatabaseMigrations(): void
     {
+        // A domicile joins an account to an address, so these tests need both
+        // halves: the framework's users and the protocol's identities.
+        $this->loadLaravelMigrations();
+
         $this->loadMigrationsFrom(__DIR__.'/../vendor/streetmesh/protocol-laravel/database/migrations');
     }
 }
