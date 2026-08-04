@@ -179,6 +179,62 @@ class ResidentTest extends TestCase
         Handle::for('alice.somewhere-else.test', 'home.test');
     }
 
+    /**
+     * The screen listed nobody, always.
+     *
+     * Not a query that was wrong — there was no query. It shipped as a
+     * demonstration that a package can own a Livewire component, returning a
+     * hardcoded empty array, and read as "nobody lives here yet" however many
+     * people did.
+     */
+    public function test_the_screen_lists_everybody_who_lives_here(): void
+    {
+        $this->serverExists();
+
+        foreach (['alice', 'bob'] as $name) {
+            $this->residents()->settle(
+                $this->user($name.'@home.test'),
+                Handle::for($name, $this->residents()->host()),
+            );
+        }
+
+        $this->get('/residents')
+            ->assertOk()
+            ->assertSee('alice.home.test')
+            ->assertSee('bob.home.test')
+            ->assertDontSee('Nobody lives here yet');
+    }
+
+    /**
+     * The server is not a resident. It holds no records of its own and belongs
+     * to nobody, so listing it among the people who live here is a category
+     * error rather than a stray row.
+     */
+    public function test_the_server_is_not_one_of_its_own_residents(): void
+    {
+        $this->serverExists();
+
+        $this->assertCount(0, $this->residents()->all());
+    }
+
+    public function test_searching_narrows_to_a_name(): void
+    {
+        $this->serverExists();
+
+        foreach (['alice', 'bob'] as $name) {
+            $this->residents()->settle(
+                $this->user($name.'@home.test'),
+                Handle::for($name, $this->residents()->host()),
+            );
+        }
+
+        $found = $this->residents()->all('ali');
+
+        $this->assertCount(1, $found);
+        $this->assertSame('alice.home.test', $found->first()?->handle);
+        $this->assertCount(0, $this->residents()->all('nobody'));
+    }
+
     public function test_a_name_is_the_same_name_however_it_was_typed(): void
     {
         $this->assertSame('alice.home.test', (string) Handle::for('  ALICE  ', 'home.test'));

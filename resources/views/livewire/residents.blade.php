@@ -1,18 +1,23 @@
 <?php
 
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use StreetMesh\Domicile\Residents\Residents;
+use StreetMesh\Protocol\Laravel\Identity\Identity;
 
 new #[Title('Residents')] class extends Component
 {
     public string $search = '';
 
     /**
-     * @return array<int, string>
+     * Everybody who lives here, narrowed by whatever has been typed.
+     *
+     * @return Collection<int, Identity>
      */
-    public function residents(): array
+    public function residents(): Collection
     {
-        return [];
+        return app(Residents::class)->all($this->search);
     }
 };?>
 
@@ -25,11 +30,29 @@ new #[Title('Residents')] class extends Component
     </div>
 
     @forelse ($this->residents() as $resident)
-        <flux:card>{{ $resident }}</flux:card>
+        {{--
+            The name and the identifier, together, because they are two
+            different things and the difference is the point of the exercise.
+
+            The name is how anybody reaches them and can be changed. The
+            identifier is who they are and cannot — it is what every record they
+            ever sign is signed as, and what somebody holding one of those
+            records years from now resolves.
+        --}}
+        <flux:card class="flex flex-col gap-1">
+            <flux:heading>{{ $resident->handle }}</flux:heading>
+            <flux:text class="font-mono text-xs break-all">{{ $resident->did }}</flux:text>
+        </flux:card>
     @empty
         <flux:callout icon="user-group">
-            <flux:callout.heading>{{ __('Nobody lives here yet') }}</flux:callout.heading>
-            <flux:callout.text>{{ __('Residents keep their own records on this server.') }}</flux:callout.text>
+            <flux:callout.heading>
+                {{ $this->search === '' ? __('Nobody lives here yet') : __('Nobody by that name') }}
+            </flux:callout.heading>
+            <flux:callout.text>
+                {{ $this->search === ''
+                    ? __('Residents keep their own records on this server.')
+                    : __('Try part of an address.') }}
+            </flux:callout.text>
         </flux:callout>
     @endforelse
 </div>

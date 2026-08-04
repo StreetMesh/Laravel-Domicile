@@ -2,6 +2,8 @@
 
 namespace StreetMesh\Domicile\Residents;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -54,6 +56,29 @@ final readonly class Residents
 
             return $settled;
         });
+    }
+
+    /**
+     * Everybody who lives here.
+     *
+     * Ordered by name because that is what somebody is scanning for. The
+     * server's own identity is not a resident and never appears: it holds no
+     * records of its own and belongs to nobody.
+     *
+     * @return Collection<int, Identity>
+     */
+    public function all(string $matching = ''): Collection
+    {
+        $matching = trim($matching);
+
+        return Identity::query()
+            ->where('is_server', false)
+            ->when(
+                $matching !== '',
+                fn (Builder $query) => $query->where('handle', 'like', '%'.$matching.'%'),
+            )
+            ->orderBy('handle')
+            ->get();
     }
 
     /**
