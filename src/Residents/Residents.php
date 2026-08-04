@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use StreetMesh\Protocol\Laravel\Identity\Identities;
 use StreetMesh\Protocol\Laravel\Identity\Identity;
+use StreetMesh\Protocol\Plc;
+use StreetMesh\Protocol\PlcDirectory;
 use StreetMesh\Protocol\SigningKey;
 
 /**
@@ -25,7 +27,10 @@ use StreetMesh\Protocol\SigningKey;
  */
 final readonly class Residents
 {
-    public function __construct(private Identities $identities) {}
+    public function __construct(
+        private Identities $identities,
+        private PlcDirectory $directory,
+    ) {}
 
     /**
      * Settle somebody at a name, and hand back what lets them leave.
@@ -56,6 +61,48 @@ final readonly class Residents
 
             return $settled;
         });
+    }
+
+    /**
+     * Change the name somebody is known by.
+     *
+     * What `did:web` could not do, and most of the reason residents are not
+     * `did:web`. Their identifier does not move, so every record they have
+     * already signed stays theirs and anybody holding one can still resolve it.
+     * Only the name people type changes.
+     *
+     * Signed with this server's rotation key, which is the lower of the two on
+     * their record. If they would rather this server had not, the key they were
+     * handed at sign-up overrules it.
+     */
+    public function rename(Model $user, Handle $handle): Identity
+    {
+        $identity = $this->identities->forUser($user)
+            ?? throw new RuntimeException('Nobody without an address can change it.');
+
+        if ($this->taken($handle)) {
+            throw new RuntimeException('Somebody here already has that address.');
+        }
+
+        $ours = $identity->rotationKey()
+            ?? throw new RuntimeException(
+                'This server holds no rotation key for that identity, so it cannot change the name on it.'
+            );
+
+        $log = $this->directory->auditLog($identity->did);
+        $head = end($log)['operation'] ?? throw new RuntimeException('That identity has no history to add to.');
+
+        $this->directory->submit($identity->did, Plc::rename($head, $ours, (string) $handle));
+
+        /*
+         * Written down here only after the directory has taken it. The record
+         * out there is the one anybody else reads; this row is a local copy of
+         * it, and a copy that ran ahead would be this server disagreeing with
+         * the network about somebody's name.
+         */
+        $identity->update(['handle' => (string) $handle]);
+
+        return $identity;
     }
 
     /**

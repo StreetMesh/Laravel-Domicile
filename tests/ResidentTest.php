@@ -73,10 +73,17 @@ class ResidentTest extends TestCase
     }
 
     /**
-     * Returned rather than kept. Holding the only copy of what lets somebody
-     * move would make moving a favour this server grants.
+     * The key they are handed is theirs, and is not the one this server keeps.
+     *
+     * This server holds a rotation key too — it has to, or it could never
+     * change their handle for them — but a different one, and lower in the
+     * order of authority. PLC lets a higher key undo what a lower one did, so
+     * whatever this server does with its key, they can overrule with theirs.
+     *
+     * The same key in both places would make leaving something this server
+     * grants rather than something they do.
      */
-    public function test_what_lets_somebody_leave_is_handed_to_them_and_not_kept(): void
+    public function test_what_lets_somebody_leave_is_theirs_alone(): void
     {
         $this->serverExists();
 
@@ -86,7 +93,11 @@ class ResidentTest extends TestCase
         );
 
         $this->assertNotNull($settled['rotationKey']);
-        $this->assertNull($settled['identity']->fresh()->rotation_key);
+
+        $ours = $settled['identity']->fresh()?->rotationKey();
+
+        $this->assertNotNull($ours, 'without one this server could never rename anybody');
+        $this->assertNotSame($settled['rotationKey']->multikey(), $ours->multikey());
     }
 
     public function test_a_name_somebody_already_has_is_not_free(): void
