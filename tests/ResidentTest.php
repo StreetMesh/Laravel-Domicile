@@ -5,6 +5,7 @@ namespace StreetMesh\Domicile\Tests;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
+use StreetMesh\Domicile\Residents\AvailableAddress;
 use StreetMesh\Domicile\Residents\Handle;
 use StreetMesh\Domicile\Residents\Residents;
 use StreetMesh\Domicile\Tests\Fixtures\Resident;
@@ -181,5 +182,33 @@ class ResidentTest extends TestCase
     public function test_a_name_is_the_same_name_however_it_was_typed(): void
     {
         $this->assertSame('alice.home.test', (string) Handle::for('  ALICE  ', 'home.test'));
+    }
+
+    /**
+     * A form has to refuse the same names the issuing does, or somebody fills
+     * it in successfully and then fails at the point of actually being given
+     * the address.
+     */
+    public function test_a_form_refuses_a_name_that_could_not_be_issued(): void
+    {
+        $this->serverExists();
+        $rule = new AvailableAddress($this->residents());
+
+        $refusals = [];
+        $collect = function (string $message) use (&$refusals): void {
+            $refusals[] = $message;
+        };
+
+        $rule->validate('address', 'alice', $collect);
+        $this->assertSame([], $refusals, 'a name nobody holds should be free');
+
+        $rule->validate('address', 'alice_smith', $collect);
+        $this->assertCount(1, $refusals);
+
+        $this->residents()->settle($this->user(), Handle::for('alice', $this->residents()->host()));
+
+        $rule->validate('address', 'alice', $collect);
+        $this->assertCount(2, $refusals);
+        $this->assertStringContainsString('already has that address', $refusals[1]);
     }
 }
