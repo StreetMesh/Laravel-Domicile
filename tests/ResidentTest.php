@@ -209,7 +209,7 @@ class ResidentTest extends TestCase
             );
         }
 
-        $this->get('/residents')
+        $this->get('/directory')
             ->assertOk()
             ->assertSee('alice.home.test')
             ->assertSee('bob.home.test')

@@ -61,7 +61,7 @@ class DomicileTest extends TestCase
 
     public function test_its_own_screen_is_at_its_own_name(): void
     {
-        $this->get('/residents')
+        $this->get('/directory')
             ->assertOk()
             ->assertSee('Nobody lives here yet');
     }
@@ -78,9 +78,9 @@ class DomicileTest extends TestCase
     public function test_it_ships_its_own_livewire_component(): void
     {
         $this->assertNotNull(
-            $this->app->make('livewire.finder')->resolveSingleFileComponentPath('domicile::residents')
+            $this->app->make('livewire.finder')->resolveSingleFileComponentPath('domicile::directory')
         );
 
-        $this->get('/residents')->assertSee('wire:model.live.debounce="search"', escape: false);
+        $this->get('/directory')->assertSee('wire:model.live.debounce="search"', escape: false);
     }
 }

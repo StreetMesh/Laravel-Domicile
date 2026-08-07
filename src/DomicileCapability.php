@@ -31,6 +31,14 @@ final class DomicileCapability implements Capability
     }
 
     /**
+     * @return array{label: string, route: string}
+     */
+    public function frontAction(): array
+    {
+        return ['label' => 'Sign in', 'route' => 'login'];
+    }
+
+    /**
      * @return array<int, Widget>
      */
     public function widgets(): array
@@ -44,7 +52,7 @@ final class DomicileCapability implements Capability
     public function navigation(): array
     {
         return [
-            ['label' => 'Residents', 'route' => 'domicile.residents'],
+            ['label' => 'Directory', 'route' => 'domicile.directory', 'icon' => 'user-group'],
         ];
     }
 }

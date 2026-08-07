@@ -17,7 +17,7 @@ class DomicileServiceProvider extends ServiceProvider
         /*
          * Livewire keeps its own register of namespaces, separate from Blade's.
          * `loadViewsFrom` above is what makes `domicile::front` resolvable as a
-         * view; it does nothing for `<livewire:domicile::residents />`, because
+         * view; it does nothing for `<livewire:domicile::directory />`, because
          * Livewire's finder consults only what `addNamespace` gave it. Both are
          * needed, and this is exactly how Livewire registers its own `pages`
          * and `layouts` namespaces on boot.
@@ -33,6 +33,12 @@ class DomicileServiceProvider extends ServiceProvider
          * surfaces that overlap, the front page and the home page, belong to
          * the application.
          */
+        /*
+         * A person who typed a resident's address into a browser is asking
+         * about a person, not resolving a handle. See the middleware.
+         */
+        $this->app['router']->pushMiddlewareToGroup('web', Http\SendResidentsHome::class);
+
         $this->app['router']
             ->middleware('web')
             ->group(__DIR__.'/../routes/web.php');

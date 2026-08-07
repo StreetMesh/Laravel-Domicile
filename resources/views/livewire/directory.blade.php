@@ -6,7 +6,7 @@ use Livewire\Component;
 use StreetMesh\Domicile\Residents\Residents;
 use StreetMesh\Protocol\Laravel\Identity\Identity;
 
-new #[Title('Residents')] class extends Component
+new #[Title('Directory')] class extends Component
 {
     public string $search = '';
 
@@ -15,7 +15,7 @@ new #[Title('Residents')] class extends Component
      *
      * @return Collection<int, Identity>
      */
-    public function residents(): Collection
+    public function listed(): Collection
     {
         return app(Residents::class)->all($this->search);
     }
@@ -28,13 +28,13 @@ new #[Title('Residents')] class extends Component
 --}}
 <div class="flex flex-col gap-6">
     <div class="flex items-center justify-between gap-4">
-        <flux:heading size="xl">{{ __('Residents') }}</flux:heading>
+        <flux:heading size="xl">{{ __('Directory') }}</flux:heading>
 
         {{-- Interactive, from a package, with no wiring in the host. --}}
         <flux:input wire:model.live.debounce="search" :placeholder="__('Search')" class="max-w-64" />
     </div>
 
-    @forelse ($this->residents() as $resident)
+    @forelse ($this->listed() as $resident)
         {{--
             The name and the identifier, together, because they are two
             different things and the difference is the point of the exercise.
@@ -44,10 +44,12 @@ new #[Title('Residents')] class extends Component
             ever sign is signed as, and what somebody holding one of those
             records years from now resolves.
         --}}
-        <flux:card class="flex flex-col gap-1">
-            <flux:heading>{{ $resident->handle }}</flux:heading>
-            <flux:text class="font-mono text-xs break-all">{{ $resident->did }}</flux:text>
-        </flux:card>
+        <a href="{{ route('domicile.profile', $resident->handle) }}" wire:navigate class="block">
+            <flux:card class="flex flex-col gap-1 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <flux:heading>{{ $resident->handle }}</flux:heading>
+                <flux:text class="font-mono text-xs break-all">{{ $resident->did }}</flux:text>
+            </flux:card>
+        </a>
     @empty
         <flux:callout icon="user-group">
             <flux:callout.heading>
