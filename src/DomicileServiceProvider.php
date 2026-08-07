@@ -39,6 +39,16 @@ class DomicileServiceProvider extends ServiceProvider
          */
         $this->app['router']->pushMiddlewareToGroup('web', Http\SendResidentsHome::class);
 
+        /*
+         * Switched off means gone, not hidden. A capability this server does
+         * not offer has no screens here — otherwise a venue serves a directory
+         * of residents it does not have, at a path a domicile in the same
+         * container would want.
+         */
+        if (! $this->app->make(Capabilities::class)->offers('domicile')) {
+            return;
+        }
+
         $this->app['router']
             ->middleware('web')
             ->group(__DIR__.'/../routes/web.php');

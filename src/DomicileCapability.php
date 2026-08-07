@@ -4,6 +4,7 @@ namespace StreetMesh\Domicile;
 
 use StreetMesh\Protocol\Laravel\Capabilities\Capability;
 use StreetMesh\Protocol\Laravel\Capabilities\Widget;
+use StreetMesh\Protocol\Laravel\Identity\Identities;
 
 /**
  * This server is somewhere people live.
@@ -36,6 +37,25 @@ final class DomicileCapability implements Capability
     public function frontAction(): array
     {
         return ['label' => 'Sign in', 'route' => 'login'];
+    }
+
+    /**
+     * A resident: an account here, and a session the framework understands.
+     *
+     * @return null|array{name: string, leave: array{label: string, route: string}}
+     */
+    public function whoever(): ?array
+    {
+        $user = auth()->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        return [
+            'name' => (string) (app(Identities::class)->forUser($user)?->handle ?? $user->name),
+            'leave' => ['label' => 'Log out', 'route' => 'logout'],
+        ];
     }
 
     /**
