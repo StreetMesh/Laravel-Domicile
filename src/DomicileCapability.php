@@ -2,7 +2,9 @@
 
 namespace StreetMesh\Domicile;
 
+use StreetMesh\Protocol\Laravel\Capabilities\Capabilities;
 use StreetMesh\Protocol\Laravel\Capabilities\Capability;
+use StreetMesh\Protocol\Laravel\Capabilities\Mark;
 use StreetMesh\Protocol\Laravel\Capabilities\Widget;
 use StreetMesh\Protocol\Laravel\Identity\Identities;
 
@@ -74,5 +76,19 @@ final class DomicileCapability implements Capability
         return [
             ['label' => 'Directory', 'route' => 'domicile.directory', 'icon' => 'user-group'],
         ];
+    }
+
+    /**
+     * What this domicile is called, in pictures.
+     *
+     * Separately settable from the venue's and rarely set. A domicile is the
+     * half that holds somebody's identity and their records, and the thing a
+     * person wants to recognise there is the server they chose to live on —
+     * which is usually the plain one the operator runs under, whatever the
+     * venue in the same container has been dressed up as.
+     */
+    public function mark(): Mark
+    {
+        return new Mark((string) (config('streetmesh.domicile.mark') ?: Capabilities::OWN_MARK));
     }
 }

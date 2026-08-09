@@ -8,6 +8,16 @@ use StreetMesh\Protocol\Laravel\Capabilities\Capabilities;
 
 class DomicileServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        /*
+         * Merged under the protocol's own key rather than a second root, so an
+         * operator configuring a server reads one file rather than one per
+         * package installed.
+         */
+        $this->mergeConfigFrom(__DIR__.'/../config/domicile.php', 'streetmesh.domicile');
+    }
+
     public function boot(): void
     {
         $this->app->make(Capabilities::class)->register(new DomicileCapability);
